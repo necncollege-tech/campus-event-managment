@@ -13,6 +13,7 @@
 <body>
 
 <header>
+
     <h1>College Event Management System</h1>
 
     <nav>
@@ -21,6 +22,7 @@
         <a href="register.html">Register</a>
         <a href="host-login.html">Host Login</a>
     </nav>
+
 </header>
 
 
@@ -52,7 +54,9 @@
 
     <p>
         <b>Payment Status:</b>
-        <span>Pending Verification ⏳</span>
+        <span id="paymentStatus">
+            Checking...
+        </span>
     </p>
 
     <br>
@@ -66,24 +70,153 @@
 
 <footer>
 
-    <p>© 2026 College Event Management System</p>
+    <p>
+        © 2026 College Event Management System
+    </p>
 
 </footer>
 
 
-<script>
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
+
+    authDomain:
+        "college-event-managment-b5d1b.firebaseapp.com",
+
+    projectId:
+        "college-event-managment-b5d1b",
+
+    storageBucket:
+        "college-event-managment-b5d1b.firebasestorage.app",
+
+    messagingSenderId:
+        "627227280897",
+
+    appId:
+        "1:627227280897:web:83f5c219c297188676e200"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+// GET STUDENT DETAILS
+
+const studentName =
+    sessionStorage.getItem("studentName") || "";
+
+const rollNumber =
+    sessionStorage.getItem("rollNumber") || "";
+
+const selectedEvent =
+    sessionStorage.getItem("selectedEvent") || "";
+
+const transactionId =
+    sessionStorage.getItem("transactionId") || "";
+
+
+// DISPLAY DETAILS
 
 document.getElementById("studentName").innerText =
-    sessionStorage.getItem("studentName");
+    studentName;
 
 document.getElementById("rollNumber").innerText =
-    sessionStorage.getItem("rollNumber");
+    rollNumber;
 
 document.getElementById("eventName").innerText =
-    sessionStorage.getItem("selectedEvent");
+    selectedEvent;
 
 document.getElementById("transactionId").innerText =
-    sessionStorage.getItem("transactionId");
+    transactionId;
+
+
+// FIND PAYMENT
+
+const paymentsRef =
+    collection(db, "payments");
+
+
+const paymentQuery =
+    query(
+        paymentsRef,
+        where("transactionId", "==", transactionId)
+    );
+
+
+// WATCH PAYMENT STATUS
+
+onSnapshot(
+    paymentQuery,
+    function(snapshot) {
+
+        const statusElement =
+            document.getElementById("paymentStatus");
+
+
+        if (snapshot.empty) {
+
+            statusElement.innerText =
+                "Payment Not Found ❌";
+
+            statusElement.style.color =
+                "red";
+
+            return;
+        }
+
+
+        snapshot.forEach(function(paymentDoc) {
+
+            const payment =
+                paymentDoc.data();
+
+
+            if (
+                payment.paymentStatus ===
+                "Verified"
+            ) {
+
+                statusElement.innerText =
+                    "Payment Verified ✅";
+
+                statusElement.style.color =
+                    "green";
+
+            } else {
+
+                statusElement.innerText =
+                    "Payment Pending ⏳";
+
+                statusElement.style.color =
+                    "orange";
+
+            }
+
+        });
+
+    }
+);
+
 
 </script>
 

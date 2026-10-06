@@ -13,7 +13,6 @@
 <body>
 
 <header>
-
     <h1>College Event Management System</h1>
 
     <nav>
@@ -22,7 +21,6 @@
         <a href="register.html">Register</a>
         <a href="host-login.html">Host Login</a>
     </nav>
-
 </header>
 
 
@@ -33,7 +31,6 @@
     <h3>Registration Fee: ₹100</h3>
 
     <p id="eventName"></p>
-
 
     <div class="payment-section">
 
@@ -49,8 +46,7 @@
 
         <p>
             <b>
-                After completing the payment,
-                enter your transaction ID below.
+                After payment, enter your transaction ID.
             </b>
         </p>
 
@@ -63,16 +59,13 @@
         type="text"
         id="transactionId"
         placeholder="Enter transaction ID"
-        required
     >
 
     <br><br>
 
-
     <button id="paymentButton">
         Submit Payment
     </button>
-
 
     <p id="paymentMessage"></p>
 
@@ -80,9 +73,7 @@
 
 
 <footer>
-
     <p>© 2026 College Event Management System</p>
-
 </footer>
 
 
@@ -99,147 +90,194 @@ import {
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// Firebase configuration
-
 const firebaseConfig = {
 
     apiKey: "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
 
-    authDomain: "college-event-managment-b5d1b.firebaseapp.com",
+    authDomain:
+        "college-event-managment-b5d1b.firebaseapp.com",
 
-    projectId: "college-event-managment-b5d1b",
+    projectId:
+        "college-event-managment-b5d1b",
 
-    storageBucket: "college-event-managment-b5d1b.firebasestorage.app",
+    storageBucket:
+        "college-event-managment-b5d1b.firebasestorage.app",
 
-    messagingSenderId: "627227280897",
+    messagingSenderId:
+        "627227280897",
 
-    appId: "1:627227280897:web:83f5c219c297188676e200"
-
+    appId:
+        "1:627227280897:web:83f5c219c297188676e200"
 };
 
-
-// Start Firebase
 
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 
 
-// Get student information
+// GET STUDENT DETAILS
 
 const studentName =
-    sessionStorage.getItem("studentName");
+    sessionStorage.getItem("studentName") || "";
 
 const rollNumber =
-    sessionStorage.getItem("rollNumber");
+    sessionStorage.getItem("rollNumber") || "";
 
 const email =
-    sessionStorage.getItem("email");
+    sessionStorage.getItem("email") || "";
 
 const phone =
-    sessionStorage.getItem("phone");
+    sessionStorage.getItem("phone") || "";
 
 const department =
-    sessionStorage.getItem("department");
+    sessionStorage.getItem("department") || "";
 
 const selectedEvent =
-    sessionStorage.getItem("selectedEvent");
+    sessionStorage.getItem("selectedEvent") || "";
 
-
-// Show selected event
 
 document.getElementById("eventName").innerHTML =
-    "Selected Event: <b>" + selectedEvent + "</b>";
+    "Selected Event: <b>" +
+    selectedEvent +
+    "</b>";
 
 
-// Payment button
+// PAYMENT BUTTON
 
 document.getElementById("paymentButton")
-    .addEventListener("click", async function() {
-
-        const transactionId =
-            document.getElementById("transactionId").value.trim();
+.addEventListener("click", async function() {
 
 
-        // Check transaction ID
-
-        if (transactionId === "") {
-
-            document.getElementById("paymentMessage").innerHTML =
-                "Please enter the transaction ID ❌";
-
-            document.getElementById("paymentMessage").style.color =
-                "red";
-
-            return;
-
-        }
+    const transactionId =
+        document.getElementById("transactionId")
+        .value
+        .trim();
 
 
-        try {
+    if (transactionId === "") {
 
-            // Save payment in Firebase
+        document.getElementById(
+            "paymentMessage"
+        ).innerHTML =
+            "Please enter transaction ID ❌";
 
+        document.getElementById(
+            "paymentMessage"
+        ).style.color = "red";
+
+        return;
+    }
+
+
+    try {
+
+
+        // SAVE PAYMENT TO FIRESTORE
+
+        const paymentRef =
             await addDoc(
                 collection(db, "payments"),
                 {
 
-                    studentName: studentName,
+                    studentName:
+                        studentName,
 
-                    rollNumber: rollNumber,
+                    rollNumber:
+                        rollNumber,
 
-                    email: email,
+                    email:
+                        email,
 
-                    phone: phone,
+                    phone:
+                        phone,
 
-                    department: department,
+                    department:
+                        department,
 
-                    event: selectedEvent,
+                    event:
+                        selectedEvent,
 
-                    amount: 100,
+                    amount:
+                        100,
 
-                    transactionId: transactionId,
+                    transactionId:
+                        transactionId,
 
-                    paymentStatus: "Pending"
+                    paymentStatus:
+                        "Pending",
+
+                    createdAt:
+                        new Date().toISOString()
 
                 }
             );
 
 
-            // Save transaction ID
-
-            sessionStorage.setItem(
-                "transactionId",
-                transactionId
-            );
+        console.log(
+            "Payment saved:",
+            paymentRef.id
+        );
 
 
-            // Disable button
+        // SAVE TRANSACTION ID
 
-            document.getElementById("paymentButton").disabled =
-                true;
+        sessionStorage.setItem(
+            "transactionId",
+            transactionId
+        );
 
 
-            // Open success page
+        // SHOW SUCCESS MESSAGE
+
+        document.getElementById(
+            "paymentMessage"
+        ).innerHTML =
+            "Payment submitted successfully! ✅";
+
+        document.getElementById(
+            "paymentMessage"
+        ).style.color = "green";
+
+
+        // DISABLE BUTTON
+
+        document.getElementById(
+            "paymentButton"
+        ).disabled = true;
+
+
+        // GO TO SUCCESS PAGE
+
+        setTimeout(function() {
 
             window.location.href =
                 "success.html";
 
-        }
+        }, 1000);
 
-        catch (error) {
 
-            console.error(error);
+    } catch (error) {
 
-            document.getElementById("paymentMessage").innerHTML =
-                "Payment submission failed ❌";
+        console.error(
+            "Payment Error:",
+            error
+        );
 
-            document.getElementById("paymentMessage").style.color =
-                "red";
 
-        }
+        document.getElementById(
+            "paymentMessage"
+        ).innerHTML =
+            "Payment submission failed ❌";
 
-    });
+
+        document.getElementById(
+            "paymentMessage"
+        ).style.color = "red";
+
+    }
+
+});
 
 </script>
 

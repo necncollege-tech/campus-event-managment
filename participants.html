@@ -18,8 +18,7 @@
 
     <nav>
         <a href="index.html">Home</a>
-        <a href="events.html">Events</a>
-        <a href="host.html">Manage Events</a>
+        <a href="events.html">Manage Events</a>
         <a href="participants.html">Participants</a>
     </nav>
 
@@ -38,7 +37,11 @@
 
 
 <footer>
-    <p>© 2026 College Event Management System</p>
+
+    <p>
+        © 2026 College Event Management System
+    </p>
+
 </footer>
 
 
@@ -96,15 +99,28 @@ async function loadParticipants() {
 
     try {
 
-        const snapshot =
+        const registrations =
             await getDocs(
-                collection(db, "registrations")
+                collection(
+                    db,
+                    "registrations"
+                )
             );
+
+
+        const payments =
+            await getDocs(
+                collection(
+                    db,
+                    "payments"
+                )
+            );
+
 
         container.innerHTML = "";
 
 
-        if (snapshot.empty) {
+        if (registrations.empty) {
 
             container.innerHTML =
                 "<p>No participants registered yet.</p>";
@@ -114,15 +130,71 @@ async function loadParticipants() {
         }
 
 
-        snapshot.forEach(
-            (participantDoc) => {
+        // STORE PAYMENTS
+
+        const paymentList = [];
+
+
+        payments.forEach(
+            (paymentDoc) => {
+
+                paymentList.push(
+                    paymentDoc.data()
+                );
+
+            }
+        );
+
+
+        // SHOW PARTICIPANTS
+
+        registrations.forEach(
+            (registrationDoc) => {
 
                 const participant =
-                    participantDoc.data();
+                    registrationDoc.data();
 
+
+                // FIND PAYMENT
+
+                const payment =
+                    paymentList.find(
+                        p =>
+                        p.rollNumber ===
+                        participant.rollNumber
+                    );
+
+
+                let paymentStatus =
+                    "Payment Not Submitted ❌";
+
+
+                if (payment) {
+
+                    if (
+                        payment.paymentStatus ===
+                        "Verified"
+                    ) {
+
+                        paymentStatus =
+                            "Payment Verified ✅";
+
+                    } else {
+
+                        paymentStatus =
+                            "Payment Pending ⏳";
+
+                    }
+
+                }
+
+
+                // CREATE CARD
 
                 const card =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
 
                 card.style.border =
@@ -169,12 +241,20 @@ async function loadParticipants() {
                         ${participant.event || "N/A"}
                     </p>
 
-                    <button class="deleteButton">
+                    <p>
+                        <b>Payment Status:</b>
+                        ${paymentStatus}
+                    </p>
+
+                    <button
+                        class="deleteButton">
                         Delete Participant
                     </button>
 
                 `;
 
+
+                // DELETE BUTTON
 
                 const deleteButton =
                     card.querySelector(
@@ -182,32 +262,37 @@ async function loadParticipants() {
                     );
 
 
-                // DELETE PARTICIPANT
-
                 deleteButton.addEventListener(
                     "click",
                     async function() {
 
                         const confirmDelete =
                             confirm(
-                                "Delete this participant?"
+                                "Are you sure you want to delete this participant?"
                             );
 
 
                         if (!confirmDelete) {
+
                             return;
+
                         }
 
 
                         try {
 
                             await deleteDoc(
+
                                 doc(
                                     db,
                                     "registrations",
-                                    participantDoc.id
+                                    registrationDoc.id
                                 )
+
                             );
+
+
+                            card.remove();
 
 
                             alert(
@@ -215,14 +300,12 @@ async function loadParticipants() {
                             );
 
 
-                            // REMOVE FROM SCREEN
-
-                            card.remove();
-
-
                         } catch (error) {
 
-                            console.error(error);
+                            console.error(
+                                error
+                            );
+
 
                             alert(
                                 "Unable to delete participant ❌"
@@ -234,7 +317,9 @@ async function loadParticipants() {
                 );
 
 
-                container.appendChild(card);
+                container.appendChild(
+                    card
+                );
 
             }
         );
@@ -242,7 +327,10 @@ async function loadParticipants() {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
+
 
         container.innerHTML =
             "<p>Unable to load participants ❌</p>";

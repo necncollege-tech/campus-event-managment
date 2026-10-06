@@ -13,24 +13,33 @@
 <body>
 
 <header>
+
     <h1>College Event Management System</h1>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="host.html">Manage Events</a>
+        <a href="participants.html">Participants</a>
+    </nav>
+
 </header>
 
-<section class="events">
+
+<section class="registration">
 
     <h2>Registered Participants</h2>
 
     <div id="participantsContainer">
-        <p>Loading participants...</p>
+        Loading participants...
     </div>
 
-    <br>
-
-    <a href="host-dashboard.html">
-        <button>Back to Dashboard</button>
-    </a>
-
 </section>
+
+
+<footer>
+    <p>© 2026 College Event Management System</p>
+</footer>
 
 
 <script type="module">
@@ -50,16 +59,20 @@ const firebaseConfig = {
 
     apiKey: "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
 
-    authDomain: "college-event-managment-b5d1b.firebaseapp.com",
+    authDomain:
+        "college-event-managment-b5d1b.firebaseapp.com",
 
-    projectId: "college-event-managment-b5d1b",
+    projectId:
+        "college-event-managment-b5d1b",
 
-    storageBucket: "college-event-managment-b5d1b.firebasestorage.app",
+    storageBucket:
+        "college-event-managment-b5d1b.firebasestorage.app",
 
-    messagingSenderId: "627227280897",
+    messagingSenderId:
+        "627227280897",
 
-    appId: "1:627227280897:web:83f5c219c297188676e200"
-
+    appId:
+        "1:627227280897:web:83f5c219c297188676e200"
 };
 
 
@@ -68,75 +81,172 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-const participantsContainer =
-    document.getElementById("participantsContainer");
+const container =
+    document.getElementById(
+        "participantsContainer"
+    );
 
 
 async function loadParticipants() {
 
     try {
 
-        const snapshot =
-            await getDocs(collection(db, "registrations"));
+        // GET REGISTRATIONS
+
+        const registrationSnapshot =
+            await getDocs(
+                collection(db, "registrations")
+            );
 
 
-        participantsContainer.innerHTML = "";
+        // GET PAYMENTS
+
+        const paymentSnapshot =
+            await getDocs(
+                collection(db, "payments")
+            );
 
 
-        if (snapshot.empty) {
+        container.innerHTML = "";
 
-            participantsContainer.innerHTML =
+
+        if (registrationSnapshot.empty) {
+
+            container.innerHTML =
                 "<p>No participants registered yet.</p>";
 
             return;
-
         }
 
 
-        snapshot.forEach((participantDoc) => {
+        // CREATE PAYMENT LIST
 
-            const participant =
-                participantDoc.data();
+        const payments = [];
 
+        paymentSnapshot.forEach(
+            (paymentDoc) => {
 
-            const participantCard =
-                document.createElement("div");
+                payments.push(
+                    paymentDoc.data()
+                );
 
-            participantCard.className =
-                "event-card";
-
-
-            participantCard.innerHTML = `
-    <h3>${participant.name || "No Name"}</h3>
-
-    <p><b>Roll Number:</b> ${participant.rollNumber || "No Roll Number"}</p>
-
-    <p><b>Email:</b> ${participant.email || "No Email"}</p>
-
-    <p><b>Phone:</b> ${participant.phone || "No Phone"}</p>
-
-    <p><b>Department:</b> ${participant.department || "No Department"}</p>
-
-    <p><b>Event:</b> ${participant.event || "No Event"}</p>
-`;
-
-            participantsContainer.appendChild(
-                participantCard
-            );
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Error loading participants:",
-            error
+            }
         );
 
-        participantsContainer.innerHTML =
-            "<p>Unable to load participants.</p>";
+
+        // DISPLAY PARTICIPANTS
+
+        registrationSnapshot.forEach(
+            (registrationDoc) => {
+
+                const participant =
+                    registrationDoc.data();
+
+
+                // FIND PAYMENT USING ROLL NUMBER
+
+                const payment =
+                    payments.find(
+                        p =>
+                        p.rollNumber ===
+                        participant.rollNumber
+                    );
+
+
+                let status =
+                    "Payment Not Submitted ❌";
+
+
+                if (payment) {
+
+                    if (
+                        payment.paymentStatus ===
+                        "Verified"
+                    ) {
+
+                        status =
+                            "Payment Verified ✅";
+
+                    } else {
+
+                        status =
+                            "Payment Pending ⏳";
+
+                    }
+
+                }
+
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.style.border =
+                    "1px solid #ccc";
+
+                card.style.padding =
+                    "15px";
+
+                card.style.margin =
+                    "15px 0";
+
+                card.style.borderRadius =
+                    "10px";
+
+
+                card.innerHTML = `
+
+                    <h3>
+                        ${participant.name}
+                    </h3>
+
+                    <p>
+                        <b>Roll Number:</b>
+                        ${participant.rollNumber}
+                    </p>
+
+                    <p>
+                        <b>Email:</b>
+                        ${participant.email}
+                    </p>
+
+                    <p>
+                        <b>Phone:</b>
+                        ${participant.phone}
+                    </p>
+
+                    <p>
+                        <b>Department:</b>
+                        ${participant.department}
+                    </p>
+
+                    <p>
+                        <b>Event:</b>
+                        ${participant.event}
+                    </p>
+
+                    <p>
+                        <b>Payment Status:</b>
+                        ${status}
+                    </p>
+
+                `;
+
+
+                container.appendChild(card);
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            "<p>Unable to load participants ❌</p>";
 
     }
 

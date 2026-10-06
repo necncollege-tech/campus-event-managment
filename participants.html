@@ -50,14 +50,17 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
     getFirestore,
     collection,
-    getDocs
+    getDocs,
+    deleteDoc,
+    doc
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 const firebaseConfig = {
 
-    apiKey: "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
+    apiKey:
+        "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
 
     authDomain:
         "college-event-managment-b5d1b.firebaseapp.com",
@@ -73,6 +76,7 @@ const firebaseConfig = {
 
     appId:
         "1:627227280897:web:83f5c219c297188676e200"
+
 };
 
 
@@ -80,107 +84,45 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 
-
 const container =
     document.getElementById(
         "participantsContainer"
     );
 
 
+// LOAD PARTICIPANTS
+
 async function loadParticipants() {
 
     try {
 
-        // GET REGISTRATIONS
-
-        const registrationSnapshot =
+        const snapshot =
             await getDocs(
                 collection(db, "registrations")
             );
 
-
-        // GET PAYMENTS
-
-        const paymentSnapshot =
-            await getDocs(
-                collection(db, "payments")
-            );
-
-
         container.innerHTML = "";
 
 
-        if (registrationSnapshot.empty) {
+        if (snapshot.empty) {
 
             container.innerHTML =
                 "<p>No participants registered yet.</p>";
 
             return;
+
         }
 
 
-        // CREATE PAYMENT LIST
-
-        const payments = [];
-
-        paymentSnapshot.forEach(
-            (paymentDoc) => {
-
-                payments.push(
-                    paymentDoc.data()
-                );
-
-            }
-        );
-
-
-        // DISPLAY PARTICIPANTS
-
-        registrationSnapshot.forEach(
-            (registrationDoc) => {
+        snapshot.forEach(
+            (participantDoc) => {
 
                 const participant =
-                    registrationDoc.data();
-
-
-                // FIND PAYMENT USING ROLL NUMBER
-
-                const payment =
-                    payments.find(
-                        p =>
-                        p.rollNumber ===
-                        participant.rollNumber
-                    );
-
-
-                let status =
-                    "Payment Not Submitted ❌";
-
-
-                if (payment) {
-
-                    if (
-                        payment.paymentStatus ===
-                        "Verified"
-                    ) {
-
-                        status =
-                            "Payment Verified ✅";
-
-                    } else {
-
-                        status =
-                            "Payment Pending ⏳";
-
-                    }
-
-                }
+                    participantDoc.data();
 
 
                 const card =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
 
                 card.style.border =
@@ -204,35 +146,92 @@ async function loadParticipants() {
 
                     <p>
                         <b>Roll Number:</b>
-                        ${participant.rollNumber}
+                        ${participant.rollNumber || "N/A"}
                     </p>
 
                     <p>
                         <b>Email:</b>
-                        ${participant.email}
+                        ${participant.email || "N/A"}
                     </p>
 
                     <p>
                         <b>Phone:</b>
-                        ${participant.phone}
+                        ${participant.phone || "N/A"}
                     </p>
 
                     <p>
                         <b>Department:</b>
-                        ${participant.department}
+                        ${participant.department || "N/A"}
                     </p>
 
                     <p>
                         <b>Event:</b>
-                        ${participant.event}
+                        ${participant.event || "N/A"}
                     </p>
 
-                    <p>
-                        <b>Payment Status:</b>
-                        ${status}
-                    </p>
+                    <button class="deleteButton">
+                        Delete Participant
+                    </button>
 
                 `;
+
+
+                const deleteButton =
+                    card.querySelector(
+                        ".deleteButton"
+                    );
+
+
+                // DELETE PARTICIPANT
+
+                deleteButton.addEventListener(
+                    "click",
+                    async function() {
+
+                        const confirmDelete =
+                            confirm(
+                                "Delete this participant?"
+                            );
+
+
+                        if (!confirmDelete) {
+                            return;
+                        }
+
+
+                        try {
+
+                            await deleteDoc(
+                                doc(
+                                    db,
+                                    "registrations",
+                                    participantDoc.id
+                                )
+                            );
+
+
+                            alert(
+                                "Participant deleted successfully! ✅"
+                            );
+
+
+                            // REMOVE FROM SCREEN
+
+                            card.remove();
+
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            alert(
+                                "Unable to delete participant ❌"
+                            );
+
+                        }
+
+                    }
+                );
 
 
                 container.appendChild(card);

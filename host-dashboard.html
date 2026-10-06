@@ -2,284 +2,381 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Host Dashboard</title>
+<meta charset="UTF-8">
 
-    <link rel="stylesheet" href="style.css">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Host Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
-<header>
-    <h1>College Event Management System</h1>
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="events.html">Events</a>
-        <a href="host.html">Manage Events</a>
-        <a href="participants.html">Participants</a>
-    </nav>
+<header>
+
+<h1>Host Dashboard</h1>
+
+<nav>
+
+<a href="index.html">Home</a>
+
+<a href="events.html">Events</a>
+
+<a href="host.html">Manage Events</a>
+
+<a href="participants.html">Participants</a>
+
+</nav>
+
 </header>
+
 
 <section class="registration">
 
-    <h2>Payment Verification</h2>
+<h2>Payment Verification</h2>
 
-    <div id="paymentsList">
-        Loading payments...
-    </div>
+<button id="refreshButton">
+Refresh Payments
+</button>
+
+<br><br>
+
+<div id="paymentsList">
+Loading payments...
+</div>
 
 </section>
 
+
 <footer>
-    <p>© 2026 College Event Management System</p>
+
+<p>
+© 2026 College Event Management System
+</p>
+
 </footer>
 
 
 <script type="module">
 
+
 import { initializeApp }
+
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
+
 import {
-    getFirestore,
-    collection,
-    getDocs,
-    doc,
-    updateDoc
+
+getFirestore,
+
+collection,
+
+getDocs,
+
+doc,
+
+updateDoc
+
 }
+
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 const firebaseConfig = {
 
-    apiKey: "AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
+apiKey:
+"AIzaSyBCd9jgelyscNH8uht8s8nFsRfXkvK-eIbg",
 
-    authDomain: "college-event-managment-b5d1b.firebaseapp.com",
+authDomain:
+"college-event-managment-b5d1b.firebaseapp.com",
 
-    projectId: "college-event-managment-b5d1b",
+projectId:
+"college-event-managment-b5d1b",
 
-    storageBucket: "college-event-managment-b5d1b.firebasestorage.app",
+storageBucket:
+"college-event-managment-b5d1b.firebasestorage.app",
 
-    messagingSenderId: "627227280897",
+messagingSenderId:
+"627227280897",
 
-    appId: "1:627227280897:web:83f5c219c297188676e200"
+appId:
+"1:627227280897:web:83f5c219c297188676e200"
 
 };
 
 
-const app = initializeApp(firebaseConfig);
+const app =
+initializeApp(firebaseConfig);
 
-const db = getFirestore(app);
+
+const db =
+getFirestore(app);
+
 
 const paymentsList =
-    document.getElementById("paymentsList");
+document.getElementById(
+"paymentsList"
+);
 
 
-// LOAD ALL PAYMENTS
+// LOAD PAYMENTS
 
 async function loadPayments() {
 
-    try {
 
-        const snapshot =
-            await getDocs(collection(db, "payments"));
+paymentsList.innerHTML =
+"<p>Loading payments...</p>";
 
-        paymentsList.innerHTML = "";
 
-        if (snapshot.empty) {
+try {
 
-            paymentsList.innerHTML =
-                "<h3>No payments found.</h3>";
 
-            return;
-        }
+const snapshot =
+await getDocs(
+collection(db, "payments")
+);
 
 
-        snapshot.forEach((paymentDoc) => {
+paymentsList.innerHTML = "";
 
-            const payment =
-                paymentDoc.data();
 
+if (snapshot.empty) {
 
-            const paymentBox =
-                document.createElement("div");
+paymentsList.innerHTML =
+"<h3>No payments found.</h3>";
 
-
-            paymentBox.style.border =
-                "2px solid #ccc";
-
-            paymentBox.style.padding =
-                "15px";
-
-            paymentBox.style.margin =
-                "15px 0";
-
-            paymentBox.style.borderRadius =
-                "10px";
-
-
-            paymentBox.innerHTML = `
-
-                <h3>
-                    Student: ${payment.studentName || "N/A"}
-                </h3>
-
-                <p>
-                    <b>Roll Number:</b>
-                    ${payment.rollNumber || "N/A"}
-                </p>
-
-                <p>
-                    <b>Email:</b>
-                    ${payment.email || "N/A"}
-                </p>
-
-                <p>
-                    <b>Phone:</b>
-                    ${payment.phone || "N/A"}
-                </p>
-
-                <p>
-                    <b>Department:</b>
-                    ${payment.department || "N/A"}
-                </p>
-
-                <p>
-                    <b>Event:</b>
-                    ${payment.event || "N/A"}
-                </p>
-
-                <p>
-                    <b>Amount:</b>
-                    ₹${payment.amount || 0}
-                </p>
-
-                <p>
-                    <b>Transaction ID:</b>
-                    ${payment.transactionId || "N/A"}
-                </p>
-
-                <p>
-                    <b>Payment Status:</b>
-                    <span class="status">
-                        ${payment.paymentStatus || "Pending"}
-                    </span>
-                </p>
-
-                <button class="verifyButton">
-                    Verify Payment
-                </button>
-
-            `;
-
-
-            const verifyButton =
-                paymentBox.querySelector(".verifyButton");
-
-
-            // ALREADY VERIFIED
-
-            if (payment.paymentStatus === "Verified") {
-
-                verifyButton.innerText =
-                    "Payment Verified";
-
-                verifyButton.disabled = true;
-
-            }
-
-
-            // VERIFY PAYMENT
-
-            verifyButton.addEventListener(
-                "click",
-                async function() {
-
-                    try {
-
-                        await updateDoc(
-
-                            doc(
-                                db,
-                                "payments",
-                                paymentDoc.id
-                            ),
-
-                            {
-                                paymentStatus:
-                                    "Verified"
-                            }
-
-                        );
-
-
-                        paymentBox.querySelector(
-                            ".status"
-                        ).innerText =
-                            "Verified";
-
-
-                        verifyButton.innerText =
-                            "Payment Verified";
-
-
-                        verifyButton.disabled =
-                            true;
-
-
-                        alert(
-                            "Payment verified successfully! ✅"
-                        );
-
-
-                    } catch (error) {
-
-                        console.error(error);
-
-                        alert(
-                            "Error verifying payment ❌"
-                        );
-
-                    }
-
-                }
-            );
-
-
-            paymentsList.appendChild(
-                paymentBox
-            );
-
-        });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        paymentsList.innerHTML = `
-
-            <h3 style="color:red;">
-                Unable to load payments ❌
-            </h3>
-
-            <p>
-                Please check Firebase Firestore.
-            </p>
-
-        `;
-
-    }
+return;
 
 }
 
 
+snapshot.forEach(
+(paymentDoc) => {
+
+
+const payment =
+paymentDoc.data();
+
+
+const box =
+document.createElement("div");
+
+
+box.style.border =
+"2px solid #ccc";
+
+box.style.padding =
+"15px";
+
+box.style.margin =
+"15px 0";
+
+box.style.borderRadius =
+"10px";
+
+
+box.innerHTML = `
+
+<h3>
+${payment.studentName || "No Name"}
+</h3>
+
+<p>
+<b>Roll Number:</b>
+${payment.rollNumber || "N/A"}
+</p>
+
+<p>
+<b>Email:</b>
+${payment.email || "N/A"}
+</p>
+
+<p>
+<b>Phone:</b>
+${payment.phone || "N/A"}
+</p>
+
+<p>
+<b>Department:</b>
+${payment.department || "N/A"}
+</p>
+
+<p>
+<b>Event:</b>
+${payment.event || "N/A"}
+</p>
+
+<p>
+<b>Amount:</b>
+₹${payment.amount || 0}
+</p>
+
+<p>
+<b>Transaction ID:</b>
+${payment.transactionId || "N/A"}
+</p>
+
+<p>
+<b>Status:</b>
+<span class="paymentStatus">
+${payment.paymentStatus || "Pending"}
+</span>
+</p>
+
+<button class="verifyButton">
+Verify Payment
+</button>
+
+`;
+
+
+const button =
+box.querySelector(
+".verifyButton"
+);
+
+
+const status =
+box.querySelector(
+".paymentStatus"
+);
+
+
+// IF ALREADY VERIFIED
+
+if (
+payment.paymentStatus ===
+"Verified"
+) {
+
+button.innerText =
+"Payment Verified";
+
+button.disabled = true;
+
+}
+
+
+// VERIFY
+
+button.addEventListener(
+"click",
+async function() {
+
+
+try {
+
+
+await updateDoc(
+
+doc(
+db,
+"payments",
+paymentDoc.id
+),
+
+{
+
+paymentStatus:
+"Verified"
+
+}
+
+);
+
+
+// UPDATE SCREEN
+
+status.innerText =
+"Verified";
+
+
+button.innerText =
+"Payment Verified";
+
+
+button.disabled =
+true;
+
+
+alert(
+"Payment verified successfully! ✅"
+);
+
+
+} catch (error) {
+
+
+console.error(
+error
+);
+
+
+alert(
+"Unable to verify payment ❌"
+);
+
+}
+
+});
+
+
+paymentsList.appendChild(
+box
+);
+
+
+});
+
+
+} catch (error) {
+
+
+console.error(
+error
+);
+
+
+paymentsList.innerHTML = `
+
+<h3 style="color:red">
+Unable to load payments ❌
+</h3>
+
+<p>
+${error.message}
+</p>
+
+`;
+
+}
+
+}
+
+
+// REFRESH BUTTON
+
+document.getElementById(
+"refreshButton"
+).addEventListener(
+"click",
+loadPayments
+);
+
+
+// FIRST LOAD
+
 loadPayments();
 
+
 </script>
+
 
 </body>
 

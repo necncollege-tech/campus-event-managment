@@ -8,35 +8,113 @@
     <title>College Event Management System</title>
 
     <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 30px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .logo-section h1 {
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            text-decoration: none;
+        }
+
+        .home-content {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .home-content h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .home-content p {
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: auto;
+        }
+
+    </style>
+
 </head>
 
 <body>
 
+
 <header>
 
-    <h1>College Event Management System</h1>
+    <div class="logo-section">
+
+        <img
+            src="logo.jpg"
+            alt="College Logo"
+            class="logo"
+        >
+
+        <h1>
+            College Event Management System
+        </h1>
+
+    </div>
+
 
     <nav>
+
         <a href="index.html">Home</a>
+
         <a href="events.html">Events</a>
+
         <a href="register.html">Register</a>
+
         <a href="host-login.html">Host Login</a>
+
     </nav>
 
 </header>
 
 
-<section class="registration">
 
-    <h2>About Our System</h2>
+<section class="home-content">
+
+    <h2>
+        Welcome to College Event Management System
+    </h2>
 
     <p>
-        The College Event Management System helps students discover
-        upcoming college events and register online.
-        Administrators can manage events and registrations.
+        The College Event Management System helps students
+        discover upcoming college events and register online.
+        Administrators can manage events, registrations,
+        and payment verification easily.
     </p>
 
 </section>
+
 
 
 <footer>
@@ -46,6 +124,7 @@
     </p>
 
 </footer>
+
 
 </body>
 
